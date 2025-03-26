@@ -17,8 +17,6 @@ find_package(catkin REQUIRED COMPONENTS
 
 #find_package(OpenCV)
 #include(/home/dji/opencv/build/OpenCVConfig.cmake)
-#include("~/Downloads/workspace/opencv-4.6.0/release/OpenCVConfig.cmake")
-
 include("~/Downloads/workspace/opencv-4.6.0/release/OpenCVConfig.cmake")
 
 find_package(Ceres REQUIRED)
