@@ -1,6 +1,6 @@
 # VINS-Fusion-gpu-20.04
 
-This repository is a version of VINS-Fusion with GPU acceleration. It can run on NVIDIA Jetson Orin NX in real-time. 
+This repository is a version of [VINS-Fusion-gpu](https://github.com/pjrambo/VINS-Fusion-gpu). It can run on NVIDIA Jetson Orin NX in real-time. 
 
 |              | Version |
 | :----------: | :-----: |
