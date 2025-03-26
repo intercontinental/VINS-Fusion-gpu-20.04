@@ -6,6 +6,8 @@ set(CMAKE_CXX_FLAGS "-std=c++11")
 #-DEIGEN_USE_MKL_ALL")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -g")
 
+set(cv_bridge_DIR "/home/catkin_pkg/src/cv_bridge/cmake")
+
 find_package(catkin REQUIRED COMPONENTS
     roscpp
     std_msgs

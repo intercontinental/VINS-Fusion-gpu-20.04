@@ -5,7 +5,7 @@ set(CMAKE_BUILD_TYPE "Release")
 set(CMAKE_CXX_FLAGS "-std=c++11")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -fPIC")
 
-Set(OpenCV_DIR "/usr/local/opencv3.4.20/share/OpenCV")
+# Set(OpenCV_DIR "/usr/local/opencv3.4.20/share/OpenCV")
 
 find_package(catkin REQUIRED COMPONENTS
     roscpp

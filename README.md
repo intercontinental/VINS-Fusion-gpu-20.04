@@ -9,6 +9,16 @@ This repository is a version of [VINS-Fusion-gpu](https://github.com/pjrambo/VIN
 |    OpenCV    |  4.6.0  |
 | ceres-solver | 1.14.0  |
 
+## Run
+
+```
+roslaunch vins vins_rviz.launch
+
+roslaunch realsense2_camera rs_camera.launch
+
+roslaunch vins realsense_d435i.launch
+```
+
 ------
 
 # VINS-Fusion-gpu
