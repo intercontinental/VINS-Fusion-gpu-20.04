@@ -100,6 +100,10 @@ void Estimator::inputIMU(double t, const Vector3d &linearAcceleration, const Vec
     //printf("input imu with time %f \n", t);
     mBuf.unlock();
 
+
+    // 使用上一时刻的姿态进行快速的imu预积分，用来预测最新P,V,Q的姿态
+    // -latest_p,latest_q,latest_v,latest_acc_0,latest_gyr_0 最新时刻的姿态。这个的作用是为了刷新姿态的输出，
+    //   但是这个值的误差相对会比较大，是未经过非线性优化获取的初始值。
     fastPredictIMU(t, linearAcceleration, angularVelocity);
     if (solver_flag == NON_LINEAR)
         pubLatestOdometry(latest_P, latest_Q, latest_V, t);

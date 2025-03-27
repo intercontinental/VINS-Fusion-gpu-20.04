@@ -53,6 +53,11 @@ FeatureTracker::FeatureTracker()
     sum_n = 0;
 }
 
+// 把追踪到的点进行标记
+// 设置遮挡部分（鱼眼相机）
+// 对检测到的特征点按追踪到的次数排序
+// 在mask图像中将追踪到点的地方设置为0，否则为255，目的是为了下面做特征点检测的时候可以选择没有特征点的区域进行检测。
+// 在同一区域内，追踪到次数最多的点会被保留，其他的点会被删除
 void FeatureTracker::setMask()
 {
     mask = cv::Mat(row, col, CV_8UC1, cv::Scalar(255));
@@ -285,6 +290,18 @@ map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> FeatureTracker::trackIm
                     cout << "mask is empty " << endl;
                 if (mask.type() != CV_8UC1)
                     cout << "mask type wrong " << endl;
+                
+                // goodFeaturesToTrack
+                // _image：8位或32位浮点型输入图像，单通道
+                // _corners：保存检测出的角点
+                // maxCorners：角点数目最大值，如果实际检测的角点超过此值，则只返回前maxCorners个强角点
+                // qualityLevel：角点的品质因子
+                // minDistance：对于初选出的角点而言，如果在其周围minDistance范围内存在其他更强角点，则将此角点删除
+                // _mask：指定感兴趣区，如不需在整幅图上寻找角点，则用此参数指定ROI
+                //
+                // blockSize：计算协方差矩阵时的窗口大小
+                // useHarrisDetector：指示是否使用Harris角点检测，如不指定，则计算shi-tomasi角点
+                // harrisK：Harris角点检测需要的k值
                 cv::goodFeaturesToTrack(cur_img, n_pts, MAX_CNT - cur_pts.size(), 0.01, MIN_DIST, mask);
                 // printf("good feature to track costs: %fms\n", t_t.toc());
                 std::cout << "n_pts size: "<< n_pts.size()<<std::endl;
@@ -334,6 +351,8 @@ map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> FeatureTracker::trackIm
         // printf("selectFeature costs: %fms\n", t_a.toc());
     }
 
+    // 将像素坐标系下的坐标，转换为归一化相机坐标系下的坐标
+    // 即cur_un_pts为归一化相机坐标系下的坐标
     cur_un_pts = undistortedPts(cur_pts, m_camera[0]);
     pts_velocity = ptsVelocity(ids, cur_un_pts, cur_un_pts_map, prev_un_pts_map);
 
@@ -629,6 +648,7 @@ vector<cv::Point2f> FeatureTracker::ptsVelocity(vector<int> &ids, vector<cv::Poi
     return pts_velocity;
 }
 
+// 画出匹配点
 void FeatureTracker::drawTrack(const cv::Mat &imLeft, const cv::Mat &imRight, 
                                vector<int> &curLeftIds,
                                vector<cv::Point2f> &curLeftPts, 

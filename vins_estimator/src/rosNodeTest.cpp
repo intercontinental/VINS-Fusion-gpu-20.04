@@ -29,7 +29,7 @@ queue<sensor_msgs::ImageConstPtr> img0_buf;
 queue<sensor_msgs::ImageConstPtr> img1_buf;
 std::mutex m_buf;
 
-
+// 获得左目的message
 void img0_callback(const sensor_msgs::ImageConstPtr &img_msg)
 {
     m_buf.lock();
@@ -37,6 +37,7 @@ void img0_callback(const sensor_msgs::ImageConstPtr &img_msg)
     m_buf.unlock();
 }
 
+// 获得右目的message
 void img1_callback(const sensor_msgs::ImageConstPtr &img_msg)
 {
     m_buf.lock();
@@ -44,7 +45,7 @@ void img1_callback(const sensor_msgs::ImageConstPtr &img_msg)
     m_buf.unlock();
 }
 
-
+// 从msg中获取图片，返回值cv::Mat，输入是当前图像msg的指针
 cv::Mat getImageFromMsg(const sensor_msgs::ImageConstPtr &img_msg)
 {
     cv_bridge::CvImageConstPtr ptr;
@@ -68,12 +69,14 @@ cv::Mat getImageFromMsg(const sensor_msgs::ImageConstPtr &img_msg)
 }
 
 // extract images with same timestamp from two topics
+// 从两个主题中提取具有相同时间戳的图像，并将图像输入到估计器中
 void sync_process()
 {
     while(1)
     {
         if(STEREO)
         {
+            //双目
             cv::Mat image0, image1;
             std_msgs::Header header;
             double time = 0;
@@ -109,6 +112,7 @@ void sync_process()
         }
         else
         {
+            // 单目
             cv::Mat image;
             std_msgs::Header header;
             double time = 0;
@@ -130,14 +134,14 @@ void sync_process()
     }
 }
 
-
+// 输入imu的msg信息，进行解算并把imu数据输入到estimator
 void imu_callback(const sensor_msgs::ImuConstPtr &imu_msg)
 {
     double t = imu_msg->header.stamp.toSec();
-    double dx = imu_msg->linear_acceleration.x;
+    double dx = imu_msg->linear_acceleration.x;  // 线加速度
     double dy = imu_msg->linear_acceleration.y;
     double dz = imu_msg->linear_acceleration.z;
-    double rx = imu_msg->angular_velocity.x;
+    double rx = imu_msg->angular_velocity.x;     // 角加速度
     double ry = imu_msg->angular_velocity.y;
     double rz = imu_msg->angular_velocity.z;
     Vector3d acc(dx, dy, dz);
@@ -146,7 +150,7 @@ void imu_callback(const sensor_msgs::ImuConstPtr &imu_msg)
     return;
 }
 
-
+// 把特征点的点云msg输入到estimator
 void feature_callback(const sensor_msgs::PointCloudConstPtr &feature_msg)
 {
     map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> featureFrame;
@@ -179,6 +183,7 @@ void feature_callback(const sensor_msgs::PointCloudConstPtr &feature_msg)
     return;
 }
 
+// 是否重启estimator，并重新设置参数
 void restart_callback(const std_msgs::BoolConstPtr &restart_msg)
 {
     if (restart_msg->data == true)
@@ -213,8 +218,8 @@ int main(int argc, char **argv)
     string config_file = argv[1];
     printf("config_file: %s\n", argv[1]);
 
-    readParameters(config_file);
-    estimator.setParameter();
+    readParameters(config_file);  // 读取参数
+    estimator.setParameter();     // 设置参数
 
 #ifdef EIGEN_DONT_PARALLELIZE
     ROS_DEBUG("EIGEN_DONT_PARALLELIZE");
@@ -224,12 +229,13 @@ int main(int argc, char **argv)
 
     registerPub(n);
 
+    // 订阅imu，左右目图像
     ros::Subscriber sub_imu = n.subscribe(IMU_TOPIC, 2000, imu_callback, ros::TransportHints().tcpNoDelay());
     ros::Subscriber sub_feature = n.subscribe("/feature_tracker/feature", 2000, feature_callback);
     ros::Subscriber sub_img0 = n.subscribe(IMAGE0_TOPIC, 100, img0_callback);
     ros::Subscriber sub_img1 = n.subscribe(IMAGE1_TOPIC, 100, img1_callback);
 
-    std::thread sync_thread{sync_process};
+    std::thread sync_thread{sync_process};  //启动处理
     ros::spin();
 
     return 0;
